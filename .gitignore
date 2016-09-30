@@ -1,8 +1,15 @@
 /_build
 /deps
+/db
 erl_crash.dump
 *.ez
 
 /node_modules
 
 /web/elm/elm-stuff
+/web/elm/build/
+/web/elm/repl-temp-*
+/web/static/vendor/app.js
+
+/priv/static/
+/web/static/vendor/
