@@ -17,10 +17,18 @@ defmodule DndTracker.Router do
     pipe_through :browser # Use the default browser stack
 
     get "/", PageController, :index
+    get "/login", PageController, :login
   end
 
   # Other scopes may use custom stacks.
   # scope "/api", DndTracker do
   #   pipe_through :api
   # end
+  scope "/auth", DndTracker do
+    pipe_through :browser # Use the default browser stack
+
+    get "/:provider", AuthController, :index
+    get "/:provider/callback", AuthController, :callback
+    delete "/logout", AuthController, :delete
+  end
 end
