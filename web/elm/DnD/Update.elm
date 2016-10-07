@@ -306,9 +306,6 @@ update msg model =
 
         FetchAllSucceed syncBlocks ->
             let
-                _ =
-                    Debug.log "FetchAllSucceed" syncBlocks
-
                 savedIds =
                     List.filterMap getSyncId syncBlocks
 
@@ -330,7 +327,7 @@ update msg model =
         SaveStatBlockSucceed savedSyncBlock ->
             let
                 savedBlock =
-                    Debug.log "SaveStatBlockSucceed" <| unwrapSync savedSyncBlock
+                    unwrapSync savedSyncBlock
 
                 updater =
                     (\syncblock ->
