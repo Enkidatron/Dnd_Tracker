@@ -31,6 +31,7 @@ view model =
             , btn BtnPrimary [] [] [ onClick NextTurn ] [ text "Next Turn" ]
             , well WellNormal [] [ text ("init: " ++ (toString currentPos.initiative) ++ ", tiebreaker: " ++ (toString currentPos.tiebreaker)) ]
             , viewStatBlockTable model.statBlockInput model.statBlocks
+            , btn BtnPrimary [] [] [ onClick FetchAll ] [ text "Fetch All" ]
             ]
 
 
@@ -119,7 +120,7 @@ viewEntry index entry =
             ]
 
 
-viewStatBlockTable : StatBlockInput -> List StatBlock -> Html Msg
+viewStatBlockTable : StatBlockInput -> List (Syncable StatBlock) -> Html Msg
 viewStatBlockTable sbInput statBlocks =
     table [ class "table table-condensced" ]
         [ thead []
@@ -129,7 +130,8 @@ viewStatBlockTable sbInput statBlocks =
                 , th [] [ text "" ]
                 , th [] [ text "Health" ]
                 , th [] [ text "Add" ]
-                , th [] [ text "Remove" ]
+                , th [] [ text "" ]
+                , th [] [ text "" ]
                 ]
             ]
         , tbody []
@@ -154,6 +156,7 @@ viewStatBlockInputRow sbInput =
             viewFormGroup "Health" "number" sbInput.health SetSBHealth
         , td [] [ btn BtnPrimary [] [] [ onClick AddStatBlock ] [ text "+" ] ]
         , td [] []
+        , td [] []
         ]
 
 
@@ -172,35 +175,48 @@ viewHitDieInput sbInput =
         ]
 
 
-viewStatBlock : StatBlock -> Html Msg
-viewStatBlock statBlock =
-    tr []
-        [ td [] [ text statBlock.name ]
-        , td []
-            [ span [ class "badge" ]
-                [ text
-                    ((if statBlock.initMod > 0 then
-                        "+"
-                      else
-                        ""
-                     )
-                        ++ (toString statBlock.initMod)
-                    )
-                ]
-            ]
-        , td [] []
-        , td []
-            [ text <|
-                case statBlock.healthBlock of
-                    HealthGenerator { numDie, dieFace, bonusHealth } ->
-                        ((toString numDie) ++ "d" ++ (toString dieFace) ++ " + " ++ (toString bonusHealth))
+viewStatBlock : Syncable StatBlock -> Html Msg
+viewStatBlock syncBlock =
+    let
+        ( prependText, statBlock ) =
+            case syncBlock of
+                New block ->
+                    ( "! ", block )
 
-                    HealthValue val ->
-                        toString val
+                Edited _ block ->
+                    ( "* ", block )
+
+                Saved _ block ->
+                    ( "", block )
+    in
+        tr []
+            [ td [] [ text <| prependText ++ statBlock.name ]
+            , td []
+                [ span [ class "badge" ]
+                    [ text
+                        ((if statBlock.initMod > 0 then
+                            "+"
+                          else
+                            ""
+                         )
+                            ++ (toString statBlock.initMod)
+                        )
+                    ]
+                ]
+            , td [] []
+            , td []
+                [ text <|
+                    case statBlock.healthBlock of
+                        HealthGenerator { numDie, dieFace, bonusHealth } ->
+                            ((toString numDie) ++ "d" ++ (toString dieFace) ++ " + " ++ (toString bonusHealth))
+
+                        HealthValue val ->
+                            toString val
+                ]
+            , td [] [ btn BtnPrimary [] [] [ onClick <| MakeEntryFromStatBlock statBlock ] [ text "^" ] ]
+            , td [] [ btn BtnInfo [ BtnExtraSmall ] [] [ onClick <| SaveStatBlock syncBlock ] [ text "Save" ] ]
+            , td [] [ btn BtnDanger [ BtnExtraSmall ] [] [ onClick <| RemoveStatBlock syncBlock ] [ text "X" ] ]
             ]
-        , td [] [ btn BtnPrimary [] [] [ onClick <| MakeEntryFromStatBlock statBlock ] [ text "^" ] ]
-        , td [] [ btn BtnDanger [ BtnExtraSmall ] [] [ onClick <| RemoveStatBlock statBlock ] [ text "X" ] ]
-        ]
 
 
 

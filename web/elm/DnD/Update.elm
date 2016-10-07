@@ -1,9 +1,13 @@
 module DnD.Update exposing (..)
 
 import DnD.Model exposing (..)
+import DnD.Interop exposing (..)
 import Random
 import String
 import Regex
+import Http
+import HttpBuilder
+import Task
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -244,19 +248,24 @@ update msg model =
                 ( newBlocks, newInput ) =
                     case ( sbInput.name, sbInput.initMod, healthBlock ) of
                         ( ValidInput _ name, ValidInput _ init, Just hb ) ->
-                            ( [ StatBlock name init hb ], blankStatBlockInput )
+                            ( [ New <| StatBlock name init hb ], blankStatBlockInput )
 
                         _ ->
                             ( [], sbInput )
+
+                cmd =
+                    case List.head newBlocks of
+                        Nothing ->
+                            Cmd.none
+
+                        Just block ->
+                            saveStatBlock block
             in
                 { model
                     | statBlocks = model.statBlocks ++ newBlocks
                     , statBlockInput = newInput
                 }
-                    ! []
-
-        RemoveStatBlock statBlock ->
-            { model | statBlocks = List.filter ((/=) statBlock) model.statBlocks } ! []
+                    ! [ cmd ]
 
         MakeEntryFromStatBlock statBlock ->
             let
@@ -291,6 +300,50 @@ update msg model =
                     Entry (getUniqueName model.entries name) (addTieBreaker model.entries initiative) health NoInput
             in
                 { model | entries = List.sortWith compareEntry (model.entries ++ [ newEntry ]) } ! []
+
+        FetchAll ->
+            model ! [ fetchAll ]
+
+        FetchAllSucceed syncBlocks ->
+            let
+                _ =
+                    Debug.log "FetchAllSucceed" syncBlocks
+
+                savedIds =
+                    List.filterMap getSyncId syncBlocks
+
+                unSyncedBlocks =
+                    List.filter (getSyncId >> Maybe.withDefault -1 >> (flip List.member savedIds) >> not) model.statBlocks
+            in
+                { model | statBlocks = unSyncedBlocks ++ syncBlocks } ! []
+
+        HttpFail fail ->
+            let
+                _ =
+                    Debug.log "Http Failure" fail
+            in
+                model ! []
+
+        SaveStatBlock block ->
+            model ! [ saveStatBlock block ]
+
+        SaveStatBlockSucceed savedSyncBlock ->
+            let
+                savedBlock =
+                    Debug.log "SaveStatBlockSucceed" <| unwrapSync savedSyncBlock
+
+                updater =
+                    (\syncblock ->
+                        if (syncblock |> unwrapSync |> (==) savedBlock) then
+                            savedSyncBlock
+                        else
+                            syncblock
+                    )
+            in
+                { model | statBlocks = List.map updater model.statBlocks } ! []
+
+        RemoveStatBlock syncBlock ->
+            { model | statBlocks = List.filter ((/=) syncBlock) model.statBlocks } ! [ deleteStatBlock syncBlock ]
 
 
 
@@ -392,8 +445,91 @@ getUniqueName entries text =
         prettySuffix text suffix
 
 
+unwrapSync : Syncable a -> a
+unwrapSync sync =
+    case sync of
+        New thing ->
+            thing
+
+        Edited _ thing ->
+            thing
+
+        Saved _ thing ->
+            thing
+
+
+getSyncId : Syncable a -> Maybe Int
+getSyncId sync =
+    case sync of
+        New _ ->
+            Nothing
+
+        Edited id _ ->
+            Just id
+
+        Saved id _ ->
+            Just id
+
+
 
 -- COMMANDS
+
+
+fetchAll : Cmd Msg
+fetchAll =
+    let
+        task =
+            Http.get syncStatBlocksDecoder "http://localhost:4000/api/stat_blocks"
+    in
+        Task.perform HttpFail FetchAllSucceed task
+
+
+saveStatBlock : Syncable StatBlock -> Cmd Msg
+saveStatBlock syncblock =
+    let
+        url =
+            "http://localhost:4000/api/stat_blocks"
+    in
+        case syncblock of
+            New block ->
+                Task.perform HttpFail SaveStatBlockSucceed <|
+                    Http.post syncStatBlockPhxDecoder url <|
+                        Http.multipart <|
+                            [ Http.stringData "stat_block" (encodeStatBlock block) ]
+
+            --we keep changing how we are encoding this in the body.
+            -- I'd rather do it the other way, with Http.string, instead of Http.multipart.
+            Edited id block ->
+                Task.perform HttpFail SaveStatBlockSucceed <|
+                    Http.post syncStatBlockDecoder (url ++ "/" ++ (toString id)) <|
+                        Http.string (encodeStatBlock block)
+
+            Saved _ _ ->
+                Cmd.none
+
+
+deleteStatBlock : Syncable StatBlock -> Cmd Msg
+deleteStatBlock syncBlock =
+    let
+        url =
+            "http://localhost:4000/api/stat_blocks/"
+    in
+        case syncBlock of
+            New _ ->
+                Cmd.none
+
+            Edited id _ ->
+                HttpBuilder.delete (url ++ (toString id))
+                    |> HttpBuilder.send HttpBuilder.unitReader HttpBuilder.unitReader
+                    |> Task.perform (Basics.always NoOp) (Basics.always NoOp)
+
+            Saved id _ ->
+                HttpBuilder.delete (url ++ (toString id))
+                    |> HttpBuilder.send HttpBuilder.unitReader HttpBuilder.unitReader
+                    |> Task.perform (Basics.always NoOp) (Basics.always NoOp)
+
+
+
 -- SUBSCRIPTIONS
 
 

@@ -11,6 +11,9 @@ defmodule DndTracker.Router do
 
   pipeline :api do
     plug :accepts, ["json"]
+    plug :fetch_session
+    # plug Plug.Parsers, parsers: [:json], json_decoder: Poison
+    # Can we parse the incoming JSON body here?
   end
 
   scope "/", DndTracker do
@@ -21,9 +24,12 @@ defmodule DndTracker.Router do
   end
 
   # Other scopes may use custom stacks.
-  # scope "/api", DndTracker do
-  #   pipe_through :api
-  # end
+  scope "/api", DndTracker do
+    pipe_through :api
+
+    resources "/stat_blocks", StatBlockController, except: [:new, :edit]
+  end
+
   scope "/auth", DndTracker do
     pipe_through :browser # Use the default browser stack
 

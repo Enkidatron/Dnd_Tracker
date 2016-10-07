@@ -21,5 +21,7 @@ import "phoenix_html"
 // import socket from "./socket"
 
 // Set up Elm app
-const elmDiv = document.querySelector('#elm-container');
-const elmApp = Elm.Main.embed(elmDiv);
+const elmDiv = document.querySelector('#elm-target');
+if (elmDiv) {
+	var elmApp = Elm.Main.fullscreen();
+}

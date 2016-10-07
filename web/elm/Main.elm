@@ -14,3 +14,8 @@ main =
         , update = update
         , subscriptions = subscriptions
         }
+
+
+init : ( Model, Cmd Msg )
+init =
+    ( blankModel, fetchAll )

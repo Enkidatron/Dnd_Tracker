@@ -1,5 +1,7 @@
 module DnD.Model exposing (..)
 
+import Http
+
 
 type Msg
     = NoOp
@@ -19,9 +21,14 @@ type Msg
     | SetSBBonusHealth String
     | SetSBUseHitDie Bool
     | AddStatBlock
-    | RemoveStatBlock StatBlock
     | MakeEntryFromStatBlock StatBlock
     | AddEntryFromStatBlock String Int Int
+    | FetchAll
+    | FetchAllSucceed (List (Syncable StatBlock))
+    | HttpFail Http.Error
+    | SaveStatBlock (Syncable StatBlock)
+    | SaveStatBlockSucceed (Syncable StatBlock)
+    | RemoveStatBlock (Syncable StatBlock)
 
 
 type alias Entry =
@@ -66,6 +73,12 @@ type alias HitDieBlock =
     }
 
 
+type Syncable a
+    = New a
+    | Edited Int a
+    | Saved Int a
+
+
 type Input t
     = NoInput
     | InvalidInput String String
@@ -94,7 +107,7 @@ type alias Model =
     { entries : Entries
     , currentTurn : Maybe TurnPosition
     , entryInput : EntryInput
-    , statBlocks : List StatBlock
+    , statBlocks : List (Syncable StatBlock)
     , statBlockInput : StatBlockInput
     }
 
@@ -109,14 +122,9 @@ blankStatBlockInput =
     StatBlockInput NoInput NoInput NoInput NoInput NoInput NoInput True
 
 
-model : Model
-model =
+blankModel : Model
+blankModel =
     Model [] Nothing blankEntryInput [] blankStatBlockInput
-
-
-init : ( Model, Cmd Msg )
-init =
-    ( model, Cmd.none )
 
 
 
