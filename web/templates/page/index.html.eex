@@ -1,1 +1,3 @@
+<script type="text/javascript">window.phoenixApiUrl = "<%= getUrl() %>";</script>
+
 <div id="elm-target"></div>

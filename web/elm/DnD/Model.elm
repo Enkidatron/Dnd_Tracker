@@ -109,6 +109,7 @@ type alias Model =
     , entryInput : EntryInput
     , statBlocks : List (Syncable StatBlock)
     , statBlockInput : StatBlockInput
+    , url : String
     }
 
 
@@ -124,7 +125,11 @@ blankStatBlockInput =
 
 blankModel : Model
 blankModel =
-    Model [] Nothing blankEntryInput [] blankStatBlockInput
+    Model [] Nothing blankEntryInput [] blankStatBlockInput ""
+
+
+newModel str =
+    { blankModel | url = str }
 
 
 

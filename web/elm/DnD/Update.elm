@@ -259,7 +259,7 @@ update msg model =
                             Cmd.none
 
                         Just block ->
-                            saveStatBlock block
+                            saveStatBlock model.url block
             in
                 { model
                     | statBlocks = model.statBlocks ++ newBlocks
@@ -325,7 +325,7 @@ update msg model =
                 model ! []
 
         SaveStatBlock block ->
-            model ! [ saveStatBlock block ]
+            model ! [ saveStatBlock model.url block ]
 
         SaveStatBlockSucceed savedSyncBlock ->
             let
@@ -343,7 +343,7 @@ update msg model =
                 { model | statBlocks = List.map updater model.statBlocks } ! []
 
         RemoveStatBlock syncBlock ->
-            { model | statBlocks = List.filter ((/=) syncBlock) model.statBlocks } ! [ deleteStatBlock syncBlock ]
+            { model | statBlocks = List.filter ((/=) syncBlock) model.statBlocks } ! [ deleteStatBlock model.url syncBlock ]
 
 
 
@@ -484,11 +484,11 @@ fetchAll =
         Task.perform HttpFail FetchAllSucceed task
 
 
-saveStatBlock : Syncable StatBlock -> Cmd Msg
-saveStatBlock syncblock =
+saveStatBlock : String -> Syncable StatBlock -> Cmd Msg
+saveStatBlock baseUrl syncblock =
     let
         url =
-            "http://localhost:4000/api/stat_blocks"
+            baseUrl ++ "/stat_blocks"
     in
         case syncblock of
             New block ->
@@ -508,11 +508,11 @@ saveStatBlock syncblock =
                 Cmd.none
 
 
-deleteStatBlock : Syncable StatBlock -> Cmd Msg
-deleteStatBlock syncBlock =
+deleteStatBlock : String -> Syncable StatBlock -> Cmd Msg
+deleteStatBlock baseUrl syncBlock =
     let
         url =
-            "http://localhost:4000/api/stat_blocks/"
+            baseUrl ++ "/stat_blocks/"
     in
         case syncBlock of
             New _ ->

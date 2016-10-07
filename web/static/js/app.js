@@ -23,5 +23,5 @@ import "phoenix_html"
 // Set up Elm app
 const elmDiv = document.querySelector('#elm-target');
 if (elmDiv) {
-	var elmApp = Elm.Main.fullscreen();
+	var elmApp = Elm.Main.fullscreen(window.phoenixApiUrl);
 }

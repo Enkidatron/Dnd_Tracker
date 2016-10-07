@@ -6,9 +6,9 @@ import DnD.Update exposing (..)
 import DnD.View exposing (..)
 
 
-main : Program Never
+main : Program String
 main =
-    App.program
+    App.programWithFlags
         { init = init
         , view = view
         , update = update
@@ -16,6 +16,6 @@ main =
         }
 
 
-init : ( Model, Cmd Msg )
-init =
-    ( blankModel, fetchAll )
+init : String -> ( Model, Cmd Msg )
+init str =
+    ( newModel str, fetchAll )
