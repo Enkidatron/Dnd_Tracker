@@ -1,3 +1,3 @@
-<script type="text/javascript">window.phoenixApiUrl = "<%= getUrl() %>";</script>
+<script type="text/javascript">window.phoenixApiUrl = "<%= DndTracker.Router.Helpers.url(@conn) %>/api";</script>
 
 <div id="elm-target"></div>

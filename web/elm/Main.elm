@@ -18,4 +18,4 @@ main =
 
 init : String -> ( Model, Cmd Msg )
 init str =
-    ( newModel str, fetchAll )
+    ( newModel str, fetchAll str )

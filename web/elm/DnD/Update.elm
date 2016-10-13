@@ -302,7 +302,7 @@ update msg model =
                 { model | entries = List.sortWith compareEntry (model.entries ++ [ newEntry ]) } ! []
 
         FetchAll ->
-            model ! [ fetchAll ]
+            model ! [ fetchAll model.url ]
 
         FetchAllSucceed syncBlocks ->
             let
@@ -472,11 +472,14 @@ getSyncId sync =
 -- COMMANDS
 
 
-fetchAll : Cmd Msg
-fetchAll =
+fetchAll : String -> Cmd Msg
+fetchAll baseUrl =
     let
+        url =
+            baseUrl ++ "/stat_blocks"
+
         task =
-            Http.get syncStatBlocksDecoder "http://localhost:4000/api/stat_blocks"
+            Http.get syncStatBlocksDecoder url
     in
         Task.perform HttpFail FetchAllSucceed task
 
