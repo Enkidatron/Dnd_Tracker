@@ -8,6 +8,7 @@ import Regex
 import Http
 import HttpBuilder
 import Task
+import Material
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -77,7 +78,7 @@ update msg model =
         SetInputInit text ->
             let
                 newInput =
-                    getInput String.toInt text
+                    getInput validateNumber text
 
                 oldEntryInput =
                     model.entryInput
@@ -90,7 +91,7 @@ update msg model =
         SetInputHealth text ->
             let
                 newInput =
-                    getInput String.toInt text
+                    getInput validateNumber text
 
                 oldEntryInput =
                     model.entryInput
@@ -104,7 +105,7 @@ update msg model =
             let
                 updateEntry e =
                     if e == entry then
-                        { e | input = getInput String.toInt text }
+                        { e | input = getInput validateNumber text }
                     else
                         e
             in
@@ -152,7 +153,7 @@ update msg model =
         SetSBInitMod text ->
             let
                 newInput =
-                    getInput String.toInt text
+                    getInput validateNumber text
 
                 oldBlock =
                     model.statBlockInput
@@ -165,7 +166,7 @@ update msg model =
         SetSBHealth text ->
             let
                 newInput =
-                    getInput String.toInt text
+                    getInput validateNumber text
 
                 oldBlock =
                     model.statBlockInput
@@ -178,7 +179,7 @@ update msg model =
         SetSBNumDie text ->
             let
                 newInput =
-                    getInput String.toInt text
+                    getInput validateNumber text
 
                 oldBlock =
                     model.statBlockInput
@@ -191,7 +192,7 @@ update msg model =
         SetSBDieFace text ->
             let
                 newInput =
-                    getInput String.toInt text
+                    getInput validateNumber text
 
                 oldBlock =
                     model.statBlockInput
@@ -204,7 +205,7 @@ update msg model =
         SetSBBonusHealth text ->
             let
                 newInput =
-                    getInput String.toInt text
+                    getInput validateNumber text
 
                 oldBlock =
                     model.statBlockInput
@@ -342,6 +343,12 @@ update msg model =
         RemoveStatBlock syncBlock ->
             { model | statBlocks = List.filter ((/=) syncBlock) model.statBlocks } ! [ deleteStatBlock model.url syncBlock ]
 
+        Mdl msg' ->
+            Material.update msg' model
+
+        SelectTab tab ->
+            { model | selectedTab = tab } ! []
+
 
 
 -- UPDATE HELPERS
@@ -466,6 +473,11 @@ getSyncId sync =
 
         Saved id _ ->
             Just id
+
+
+validateNumber : String -> Result String Int
+validateNumber =
+    String.toInt >> Result.formatError (Basics.always "Please enter a number")
 
 
 

@@ -1,3 +1,121 @@
+dialog {
+  position: absolute;
+  left: 0; right: 0;
+  width: -moz-fit-content;
+  width: -webkit-fit-content;
+  width: fit-content;
+  height: -moz-fit-content;
+  height: -webkit-fit-content;
+  height: fit-content;
+  margin: auto;
+  border: solid;
+  padding: 1em;
+  background: white;
+  color: black;
+  display: none;
+}
+
+dialog[open] {
+  display: block;
+}
+
+dialog + .backdrop {
+  position: fixed;
+  top: 0; right: 0; bottom: 0; left: 0;
+  background: rgba(0,0,0,0.1);
+}
+
+/* for small devices, modal dialogs go full-screen */
+@media screen and (max-width: 540px) {
+  dialog[_polyfill_modal] {  /* TODO: implement */
+    top: 0;
+    width: auto;
+    margin: 1em;
+  }
+}
+
+._dialog_overlay {
+  position: fixed;
+  top: 0; right: 0; bottom: 0; left: 0;
+}
+
+dialog.fixed {
+  position: fixed;
+  top: 50%;
+  transform: translate(0, -50%);
+}
+/**
+ * GitHub Gist Theme
+ * Author : Louis Barranqueiro - https://github.com/LouisBarranqueiro
+ */
+
+.hljs {
+  display: block;
+  background: white;
+  padding: 0.5em;
+  color: #333333;
+  overflow-x: auto;
+}
+
+.hljs-comment,
+.hljs-meta {
+  color: #969896;
+}
+
+.hljs-string,
+.hljs-variable,
+.hljs-template-variable,
+.hljs-strong,
+.hljs-emphasis,
+.hljs-quote {
+  color: #df5000;
+}
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-type {
+  color: #a71d5d;
+}
+
+.hljs-literal,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-attribute {
+  color: #0086b3;
+}
+
+.hljs-section,
+.hljs-name {
+  color: #63a35c;
+}
+
+.hljs-tag {
+  color: #333333;
+}
+
+.hljs-title,
+.hljs-attr,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-selector-attr,
+.hljs-selector-pseudo {
+  color: #795da3;
+}
+
+.hljs-addition {
+  color: #55a532;
+  background-color: #eaffea;
+}
+
+.hljs-deletion {
+  color: #bd2c00;
+  background-color: #ffecec;
+}
+
+.hljs-link {
+  text-decoration: underline;
+}
+
 /* Includes Bootstrap as well as some default style for the starter
  * application. This can be safely deleted to start fresh.
  */

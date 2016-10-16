@@ -1,6 +1,7 @@
 module DnD.Model exposing (..)
 
 import Http
+import Material
 
 
 type Msg
@@ -29,6 +30,8 @@ type Msg
     | SaveStatBlock (Syncable StatBlock)
     | SaveStatBlockSucceed (Syncable StatBlock)
     | RemoveStatBlock (Syncable StatBlock)
+    | Mdl (Material.Msg Msg)
+    | SelectTab Int
 
 
 type alias Entry =
@@ -110,6 +113,8 @@ type alias Model =
     , statBlocks : List (Syncable StatBlock)
     , statBlockInput : StatBlockInput
     , url : String
+    , mdl : Material.Model
+    , selectedTab : Int
     }
 
 
@@ -125,7 +130,15 @@ blankStatBlockInput =
 
 blankModel : Model
 blankModel =
-    Model [] Nothing blankEntryInput [] blankStatBlockInput ""
+    { entries = []
+    , currentTurn = Nothing
+    , entryInput = blankEntryInput
+    , statBlocks = []
+    , statBlockInput = blankStatBlockInput
+    , url = ""
+    , mdl = Material.model
+    , selectedTab = 0
+    }
 
 
 newModel str =
