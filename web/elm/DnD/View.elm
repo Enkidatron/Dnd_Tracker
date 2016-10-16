@@ -96,6 +96,7 @@ viewEntryInputRow mdl input' =
                 mdl
                 [ Button.onClick AddEntry, Button.fab, Button.ripple, disableEntryButton input' ]
                 [ Icon.i "add" ]
+            , Button.render Mdl [ 1, 4 ] mdl [ Button.onClick ClearEntryInput, Button.minifab, Button.ripple ] [ Icon.i "delete" ]
             ]
         ]
 

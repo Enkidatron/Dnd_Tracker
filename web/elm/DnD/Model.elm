@@ -32,6 +32,7 @@ type Msg
     | RemoveStatBlock (Syncable StatBlock)
     | Mdl (Material.Msg Msg)
     | SelectTab Int
+    | ClearEntryInput
 
 
 type alias Entry =
@@ -141,6 +142,7 @@ blankModel =
     }
 
 
+newModel : String -> Model
 newModel str =
     { blankModel | url = str }
 

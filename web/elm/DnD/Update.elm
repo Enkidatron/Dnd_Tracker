@@ -349,6 +349,9 @@ update msg model =
         SelectTab tab ->
             { model | selectedTab = tab } ! []
 
+        ClearEntryInput ->
+            { model | entryInput = blankEntryInput } ! []
+
 
 
 -- UPDATE HELPERS
