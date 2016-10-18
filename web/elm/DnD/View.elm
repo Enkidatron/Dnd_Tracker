@@ -88,7 +88,7 @@ viewEntryInputRow mdl input' =
                 [ 1, 1 ]
                 mdl
                 [ Textfield.onInput (SetEntry EntryInit >> EntryInputMsg)
-                , Textfield.on "keyup" (entryKeyUpHandler EntryInit)
+                , Textfield.on "keydown" (entryKeyUpHandler EntryInit)
                 , Textfield.label "Initiative"
                 , Textfield.floatingLabel
                 , Textfield.value <| getInputString input'.init
@@ -100,7 +100,7 @@ viewEntryInputRow mdl input' =
                 [ 1, 2 ]
                 mdl
                 [ Textfield.onInput (SetEntry EntryHealth >> EntryInputMsg)
-                , Textfield.on "keyup" (entryKeyUpHandler EntryHealth)
+                , Textfield.on "keydown" (entryKeyUpHandler EntryHealth)
                 , Textfield.label "Health"
                 , Textfield.floatingLabel
                 , Textfield.value <| getInputString input'.health
@@ -134,7 +134,7 @@ viewEntry mdl key entry =
                 [ 2, 0, key ]
                 mdl
                 [ Textfield.onInput <| (SetHealthAdjust entry >> EntryMsg)
-                , Textfield.on "keyup" (dynamicKeyUpHandler entry)
+                , Textfield.on "keydown" (dynamicKeyUpHandler entry)
                 , Textfield.value <| getInputString entry.input
                 , showError entry.input
                 ]
@@ -224,7 +224,7 @@ viewStatBlockInput mdl input =
                 [ 4, 1 ]
                 mdl
                 [ Textfield.onInput (SetSB SBInitMod >> SBInputMsg)
-                , Textfield.on "keyup" (sbKeyUpHandler SBInitMod)
+                , Textfield.on "keydown" (sbKeyUpHandler SBInitMod)
                 , Textfield.value <| getInputString input.initMod
                 , Textfield.label "Initiative"
                 , Textfield.floatingLabel
@@ -254,7 +254,7 @@ viewStatBlockInputHealthBlock mdl input =
                 [ 4, 3, 0 ]
                 mdl
                 [ Textfield.onInput (SetSB SBNumDie >> SBInputMsg)
-                , Textfield.on "keyup" (sbKeyUpHandler SBNumDie)
+                , Textfield.on "keydown" (sbKeyUpHandler SBNumDie)
                 , Textfield.value <| getInputString input.numDie
                 , showError input.numDie
                 ]
@@ -265,7 +265,7 @@ viewStatBlockInputHealthBlock mdl input =
                 [ 4, 3, 1 ]
                 mdl
                 [ Textfield.onInput (SetSB SBDieFace >> SBInputMsg)
-                , Textfield.on "keyup" (sbKeyUpHandler SBDieFace)
+                , Textfield.on "keydown" (sbKeyUpHandler SBDieFace)
                 , Textfield.value <| getInputString input.dieFace
                 , showError input.dieFace
                 ]
@@ -276,7 +276,7 @@ viewStatBlockInputHealthBlock mdl input =
                 [ 4, 3, 2 ]
                 mdl
                 [ Textfield.onInput (SetSB SBBonusHealth >> SBInputMsg)
-                , Textfield.on "keyup" (sbKeyUpHandler SBBonusHealth)
+                , Textfield.on "keydown" (sbKeyUpHandler SBBonusHealth)
                 , Textfield.value <| getInputString input.bonusHealth
                 , showError input.bonusHealth
                 ]
@@ -288,7 +288,7 @@ viewStatBlockInputHealthBlock mdl input =
                 [ 4, 3 ]
                 mdl
                 [ Textfield.onInput (SetSB SBHealth >> SBInputMsg)
-                , Textfield.on "keyup" (sbKeyUpHandler SBHealth)
+                , Textfield.on "keydown" (sbKeyUpHandler SBHealth)
                 , Textfield.value <| getInputString input.health
                 , Textfield.label "Health"
                 , Textfield.floatingLabel
