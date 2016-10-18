@@ -7,20 +7,10 @@ import Material
 type Msg
     = NoOp
     | AddEntry
-    | RemoveEntry Entry
     | NextTurn
-    | SetInputName String
-    | SetInputInit String
-    | SetInputHealth String
-    | SetHealthAdjustInput Entry String
-    | UpdateHealth Entry HealthAdjustment
-    | SetSBName String
-    | SetSBInitMod String
-    | SetSBHealth String
-    | SetSBNumDie String
-    | SetSBDieFace String
-    | SetSBBonusHealth String
-    | SetSBUseHitDie Bool
+    | EntryInputMsg EntryInputMsg
+    | EntryMsg EntryMsg
+    | SBInputMsg SBInputMsg
     | AddStatBlock
     | MakeEntryFromStatBlock StatBlock
     | AddEntryFromStatBlock String Int Int
@@ -32,7 +22,43 @@ type Msg
     | RemoveStatBlock (Syncable StatBlock)
     | Mdl (Material.Msg Msg)
     | SelectTab Int
-    | ClearEntryInput
+
+
+type EntryInputMsg
+    = SetEntry EntryInputField String
+    | IncrementEntry EntryInputField
+    | DecrementEntry EntryInputField
+    | Clear
+
+
+type EntryInputField
+    = EntryName
+    | EntryInit
+    | EntryHealth
+
+
+type SBInputMsg
+    = SetSB SBInputField String
+    | IncrementSB SBInputField
+    | DecrementSB SBInputField
+    | ToggleUseHitDie
+
+
+type SBInputField
+    = SBName
+    | SBInitMod
+    | SBHealth
+    | SBNumDie
+    | SBDieFace
+    | SBBonusHealth
+
+
+type EntryMsg
+    = SetHealthAdjust Entry String
+    | IncrementHealthAdjust Entry
+    | DecrementHealthAdjust Entry
+    | UpdateHealth Entry HealthAdjustment
+    | RemoveEntry Entry
 
 
 type alias Entry =

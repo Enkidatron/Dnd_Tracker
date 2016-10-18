@@ -2,6 +2,7 @@ module DnD.View exposing (..)
 
 import DnD.Model exposing (..)
 import Html exposing (..)
+import Json.Decode as JD exposing (Decoder, (:=))
 import Material
 import Material.Button as Button
 import Material.Scheme
@@ -75,19 +76,36 @@ viewEntryInputRow mdl input' =
             [ Textfield.render Mdl
                 [ 1, 0 ]
                 mdl
-                [ Textfield.onInput SetInputName, Textfield.label "Name", Textfield.floatingLabel, Textfield.value <| getInputString input'.name, showError input'.name ]
+                [ Textfield.onInput (SetEntry EntryName >> EntryInputMsg)
+                , Textfield.label "Name"
+                , Textfield.floatingLabel
+                , Textfield.value <| getInputString input'.name
+                , showError input'.name
+                ]
             ]
         , Table.th []
             [ Textfield.render Mdl
                 [ 1, 1 ]
                 mdl
-                [ Textfield.onInput SetInputInit, Textfield.label "Initiative", Textfield.floatingLabel, Textfield.value <| getInputString input'.init, showError input'.init ]
+                [ Textfield.onInput (SetEntry EntryInit >> EntryInputMsg)
+                , Textfield.on "keyup" (entryKeyUpHandler EntryInit)
+                , Textfield.label "Initiative"
+                , Textfield.floatingLabel
+                , Textfield.value <| getInputString input'.init
+                , showError input'.init
+                ]
             ]
         , Table.th []
             [ Textfield.render Mdl
                 [ 1, 2 ]
                 mdl
-                [ Textfield.onInput SetInputHealth, Textfield.label "Health", Textfield.floatingLabel, Textfield.value <| getInputString input'.health, showError input'.health ]
+                [ Textfield.onInput (SetEntry EntryHealth >> EntryInputMsg)
+                , Textfield.on "keyup" (entryKeyUpHandler EntryHealth)
+                , Textfield.label "Health"
+                , Textfield.floatingLabel
+                , Textfield.value <| getInputString input'.health
+                , showError input'.health
+                ]
             ]
         , Table.th [] []
         , Table.th []
@@ -96,7 +114,7 @@ viewEntryInputRow mdl input' =
                 mdl
                 [ Button.onClick AddEntry, Button.fab, Button.ripple, disableEntryButton input' ]
                 [ Icon.i "add" ]
-            , Button.render Mdl [ 1, 4 ] mdl [ Button.onClick ClearEntryInput, Button.minifab, Button.ripple ] [ Icon.i "delete" ]
+            , Button.render Mdl [ 1, 4 ] mdl [ Button.onClick (Clear |> EntryInputMsg), Button.minifab, Button.ripple ] [ Icon.i "delete" ]
             ]
         ]
 
@@ -115,14 +133,18 @@ viewEntry mdl key entry =
             [ Textfield.render Mdl
                 [ 2, 0, key ]
                 mdl
-                [ Textfield.onInput <| SetHealthAdjustInput entry, Textfield.value <| getInputString entry.input, showError entry.input ]
+                [ Textfield.onInput <| (SetHealthAdjust entry >> EntryMsg)
+                , Textfield.on "keyup" (dynamicKeyUpHandler entry)
+                , Textfield.value <| getInputString entry.input
+                , showError entry.input
+                ]
             ]
         , Table.td []
-            [ Button.render Mdl [ 2, 1, key, 1 ] mdl [ Button.onClick <| UpdateHealth entry Damage, Button.icon, Button.colored ] [ Icon.i "remove_circle" ]
-            , Button.render Mdl [ 2, 1, key, 2 ] mdl [ Button.onClick <| UpdateHealth entry Heal, Button.icon, Button.colored ] [ Icon.i "add_circle" ]
+            [ Button.render Mdl [ 2, 1, key, 1 ] mdl [ Button.onClick <| (UpdateHealth entry Damage |> EntryMsg), Button.icon, Button.colored ] [ Icon.i "remove_circle" ]
+            , Button.render Mdl [ 2, 1, key, 2 ] mdl [ Button.onClick <| (UpdateHealth entry Heal |> EntryMsg), Button.icon, Button.colored ] [ Icon.i "add_circle" ]
             ]
         , Table.td []
-            [ Button.render Mdl [ 2, 2, key ] mdl [ Button.onClick <| RemoveEntry entry, Button.minifab, Button.colored, Color.text dangerColor ] [ Icon.i "delete" ] ]
+            [ Button.render Mdl [ 2, 2, key ] mdl [ Button.onClick <| (RemoveEntry entry |> EntryMsg), Button.minifab, Button.colored, Color.text dangerColor ] [ Icon.i "delete" ] ]
         ]
 
 
@@ -163,7 +185,7 @@ viewStatBlock mdl key syncBlock =
     in
         Table.tr []
             [ Table.td [] [ text block.name ]
-            , Table.td [] [ text <| toString block.initMod ]
+            , Table.td [] [ text <| formatModifier block.initMod ]
             , Table.td [] [ viewStatBlockHealthBlock mdl block.healthBlock ]
             , Table.td []
                 [ Button.render Mdl [ 3, key, 0 ] mdl [ Button.raised, Button.onClick <| MakeEntryFromStatBlock block, Button.ripple, Button.colored ] [ Icon.i "add" ]
@@ -187,11 +209,35 @@ viewStatBlockInput : Material.Model -> StatBlockInput -> Html Msg
 viewStatBlockInput mdl input =
     Grid.grid [ Elevation.e2 ]
         ([ Grid.cell [ Grid.size Desktop 2, Grid.size Tablet 3 ]
-            [ Textfield.render Mdl [ 4, 0 ] mdl [ Textfield.onInput SetSBName, Textfield.value <| getInputString input.name, Textfield.label "Name", Textfield.floatingLabel, showError input.name ] ]
+            [ Textfield.render Mdl
+                [ 4, 0 ]
+                mdl
+                [ Textfield.onInput (SetSB SBName >> SBInputMsg)
+                , Textfield.value <| getInputString input.name
+                , Textfield.label "Name"
+                , Textfield.floatingLabel
+                , showError input.name
+                ]
+            ]
          , Grid.cell [ Grid.size Desktop 2, Grid.size Tablet 3 ]
-            [ Textfield.render Mdl [ 4, 1 ] mdl [ Textfield.onInput SetSBInitMod, Textfield.value <| getInputString input.initMod, Textfield.label "Initiative", Textfield.floatingLabel, showError input.initMod ] ]
+            [ Textfield.render Mdl
+                [ 4, 1 ]
+                mdl
+                [ Textfield.onInput (SetSB SBInitMod >> SBInputMsg)
+                , Textfield.on "keyup" (sbKeyUpHandler SBInitMod)
+                , Textfield.value <| getInputString input.initMod
+                , Textfield.label "Initiative"
+                , Textfield.floatingLabel
+                , showError input.initMod
+                ]
+            ]
          , Grid.cell [ Grid.size All 2, Grid.size Phone 4 ]
-            [ Toggles.switch Mdl [ 4, 2 ] mdl [ Toggles.onClick <| SetSBUseHitDie <| not input.useHitDie, Toggles.value input.useHitDie ] [ text "Use Hit Die" ] ]
+            [ Toggles.switch Mdl
+                [ 4, 2 ]
+                mdl
+                [ Toggles.onClick <| (ToggleUseHitDie |> SBInputMsg), Toggles.value input.useHitDie ]
+                [ text "Use Hit Die" ]
+            ]
          ]
             ++ (viewStatBlockInputHealthBlock mdl input)
             ++ [ Grid.cell [ Grid.size All 1 ]
@@ -204,17 +250,49 @@ viewStatBlockInputHealthBlock : Material.Model -> StatBlockInput -> List (Grid.C
 viewStatBlockInputHealthBlock mdl input =
     if input.useHitDie then
         [ Grid.cell [ Grid.size All 1, Grid.size Phone 3 ]
-            [ Textfield.render Mdl [ 4, 3, 0 ] mdl [ Textfield.onInput SetSBNumDie, Textfield.value <| getInputString input.numDie, showError input.numDie ] ]
+            [ Textfield.render Mdl
+                [ 4, 3, 0 ]
+                mdl
+                [ Textfield.onInput (SetSB SBNumDie >> SBInputMsg)
+                , Textfield.on "keyup" (sbKeyUpHandler SBNumDie)
+                , Textfield.value <| getInputString input.numDie
+                , showError input.numDie
+                ]
+            ]
         , Grid.cell [ Grid.size All 1 ] [ Chip.span [ Options.center ] [ Chip.content [] [ text "d" ] ] ]
         , Grid.cell [ Grid.size All 1, Grid.size Phone 3 ]
-            [ Textfield.render Mdl [ 4, 3, 1 ] mdl [ Textfield.onInput SetSBDieFace, Textfield.value <| getInputString input.dieFace, showError input.dieFace ] ]
+            [ Textfield.render Mdl
+                [ 4, 3, 1 ]
+                mdl
+                [ Textfield.onInput (SetSB SBDieFace >> SBInputMsg)
+                , Textfield.on "keyup" (sbKeyUpHandler SBDieFace)
+                , Textfield.value <| getInputString input.dieFace
+                , showError input.dieFace
+                ]
+            ]
         , Grid.cell [ Grid.size All 1 ] [ Chip.span [ Options.center ] [ Chip.content [] [ text "+" ] ] ]
         , Grid.cell [ Grid.size All 1, Grid.size Phone 4 ]
-            [ Textfield.render Mdl [ 4, 3, 2 ] mdl [ Textfield.onInput SetSBBonusHealth, Textfield.value <| getInputString input.bonusHealth, showError input.bonusHealth ] ]
+            [ Textfield.render Mdl
+                [ 4, 3, 2 ]
+                mdl
+                [ Textfield.onInput (SetSB SBBonusHealth >> SBInputMsg)
+                , Textfield.on "keyup" (sbKeyUpHandler SBBonusHealth)
+                , Textfield.value <| getInputString input.bonusHealth
+                , showError input.bonusHealth
+                ]
+            ]
         ]
     else
         [ Grid.cell [ Grid.size All 5 ]
-            [ Textfield.render Mdl [ 4, 3 ] mdl [ Textfield.onInput SetSBHealth, Textfield.value <| getInputString input.health, Textfield.label "Health", Textfield.floatingLabel ]
+            [ Textfield.render Mdl
+                [ 4, 3 ]
+                mdl
+                [ Textfield.onInput (SetSB SBHealth >> SBInputMsg)
+                , Textfield.on "keyup" (sbKeyUpHandler SBHealth)
+                , Textfield.value <| getInputString input.health
+                , Textfield.label "Health"
+                , Textfield.floatingLabel
+                ]
             ]
         ]
 
@@ -243,6 +321,14 @@ getInputString input =
 
         ValidInput str _ ->
             str
+
+
+formatModifier : Int -> String
+formatModifier int =
+    if int >= 0 then
+        "+" ++ (toString int)
+    else
+        toString int
 
 
 showError : Input a -> Textfield.Property b
@@ -297,3 +383,57 @@ getHealthColor health =
 dangerColor : Color.Color
 dangerColor =
     (Color.color Color.Red Color.A700)
+
+
+sbKeyUpHandler : SBInputField -> Decoder Msg
+sbKeyUpHandler field =
+    ("keyCode" := JD.int) `JD.andThen` (sbInterpretKeyUp field)
+
+
+sbInterpretKeyUp : SBInputField -> Int -> Decoder Msg
+sbInterpretKeyUp field int =
+    case int of
+        38 ->
+            JD.succeed <| SBInputMsg <| IncrementSB field
+
+        40 ->
+            JD.succeed <| SBInputMsg <| DecrementSB field
+
+        _ ->
+            JD.fail "Not interested in this input"
+
+
+entryKeyUpHandler : EntryInputField -> Decoder Msg
+entryKeyUpHandler field =
+    ("keyCode" := JD.int) `JD.andThen` (entryInterpretKeyUp field)
+
+
+entryInterpretKeyUp : EntryInputField -> Int -> Decoder Msg
+entryInterpretKeyUp field int =
+    case int of
+        38 ->
+            JD.succeed <| EntryInputMsg <| IncrementEntry field
+
+        40 ->
+            JD.succeed <| EntryInputMsg <| DecrementEntry field
+
+        _ ->
+            JD.fail "Not interested in this input"
+
+
+dynamicKeyUpHandler : Entry -> Decoder Msg
+dynamicKeyUpHandler entry =
+    ("keyCode" := JD.int) `JD.andThen` (dynamicInterpretKeyUp entry)
+
+
+dynamicInterpretKeyUp : Entry -> Int -> Decoder Msg
+dynamicInterpretKeyUp entry int =
+    case int of
+        38 ->
+            JD.succeed <| EntryMsg <| IncrementHealthAdjust entry
+
+        40 ->
+            JD.succeed <| EntryMsg <| DecrementHealthAdjust entry
+
+        _ ->
+            JD.fail "Not interested in this input"

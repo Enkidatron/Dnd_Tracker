@@ -36,13 +36,6 @@ update msg model =
                 }
                     ! []
 
-        RemoveEntry entry ->
-            { model
-                | entries = List.filter ((/=) entry) model.entries
-                , entryInput = getEntryInput entry.name entry.pos.initiative entry.health
-            }
-                ! []
-
         NextTurn ->
             let
                 currentPos =
@@ -62,168 +55,14 @@ update msg model =
             in
                 { model | currentTurn = nextPos } ! []
 
-        SetInputName text ->
-            let
-                newInput =
-                    getInput isNotBlank text
+        EntryInputMsg innerMsg ->
+            { model | entryInput = updateEntryInput innerMsg model.entryInput } ! []
 
-                oldEntryInput =
-                    model.entryInput
+        EntryMsg innerMsg ->
+            { model | entries = updateEntries innerMsg model.entries } ! []
 
-                newEntryInput =
-                    { oldEntryInput | name = newInput }
-            in
-                { model | entryInput = newEntryInput } ! []
-
-        SetInputInit text ->
-            let
-                newInput =
-                    getInput validateNumber text
-
-                oldEntryInput =
-                    model.entryInput
-
-                newEntryInput =
-                    { oldEntryInput | init = newInput }
-            in
-                { model | entryInput = newEntryInput } ! []
-
-        SetInputHealth text ->
-            let
-                newInput =
-                    getInput validateNumber text
-
-                oldEntryInput =
-                    model.entryInput
-
-                newEntryInput =
-                    { oldEntryInput | health = newInput }
-            in
-                { model | entryInput = newEntryInput } ! []
-
-        SetHealthAdjustInput entry text ->
-            let
-                updateEntry e =
-                    if e == entry then
-                        { e | input = getInput validateNumber text }
-                    else
-                        e
-            in
-                { model | entries = List.map updateEntry model.entries } ! []
-
-        UpdateHealth entry direction ->
-            let
-                operator =
-                    case direction of
-                        Heal ->
-                            (+)
-
-                        Damage ->
-                            (-)
-
-                amount =
-                    case entry.input of
-                        ValidInput _ num ->
-                            num
-
-                        _ ->
-                            0
-
-                updateEntry e =
-                    if e == entry then
-                        { e | health = operator e.health amount, input = NoInput }
-                    else
-                        e
-            in
-                { model | entries = List.map updateEntry model.entries } ! []
-
-        SetSBName text ->
-            let
-                newInput =
-                    getInput isNotBlank text
-
-                oldBlock =
-                    model.statBlockInput
-
-                newBlock =
-                    { oldBlock | name = newInput }
-            in
-                { model | statBlockInput = newBlock } ! []
-
-        SetSBInitMod text ->
-            let
-                newInput =
-                    getInput validateNumber text
-
-                oldBlock =
-                    model.statBlockInput
-
-                newBlock =
-                    { oldBlock | initMod = newInput }
-            in
-                { model | statBlockInput = newBlock } ! []
-
-        SetSBHealth text ->
-            let
-                newInput =
-                    getInput validateNumber text
-
-                oldBlock =
-                    model.statBlockInput
-
-                newBlock =
-                    { oldBlock | health = newInput }
-            in
-                { model | statBlockInput = newBlock } ! []
-
-        SetSBNumDie text ->
-            let
-                newInput =
-                    getInput validateNumber text
-
-                oldBlock =
-                    model.statBlockInput
-
-                newBlock =
-                    { oldBlock | numDie = newInput }
-            in
-                { model | statBlockInput = newBlock } ! []
-
-        SetSBDieFace text ->
-            let
-                newInput =
-                    getInput validateNumber text
-
-                oldBlock =
-                    model.statBlockInput
-
-                newBlock =
-                    { oldBlock | dieFace = newInput }
-            in
-                { model | statBlockInput = newBlock } ! []
-
-        SetSBBonusHealth text ->
-            let
-                newInput =
-                    getInput validateNumber text
-
-                oldBlock =
-                    model.statBlockInput
-
-                newBlock =
-                    { oldBlock | bonusHealth = newInput }
-            in
-                { model | statBlockInput = newBlock } ! []
-
-        SetSBUseHitDie bool ->
-            let
-                oldBlock =
-                    model.statBlockInput
-
-                newBlock =
-                    { oldBlock | useHitDie = bool }
-            in
-                { model | statBlockInput = newBlock } ! []
+        SBInputMsg innerMsg ->
+            { model | statBlockInput = updateSBInput innerMsg model.statBlockInput } ! []
 
         AddStatBlock ->
             let
@@ -349,8 +188,175 @@ update msg model =
         SelectTab tab ->
             { model | selectedTab = tab } ! []
 
-        ClearEntryInput ->
-            { model | entryInput = blankEntryInput } ! []
+
+updateEntryInput : EntryInputMsg -> EntryInput -> EntryInput
+updateEntryInput msg input =
+    case msg of
+        SetEntry field text ->
+            case field of
+                EntryName ->
+                    { input | name = getInput isNotBlank text }
+
+                EntryInit ->
+                    { input | init = getInput validateNumber text }
+
+                EntryHealth ->
+                    { input | health = getInput validateNumber text }
+
+        IncrementEntry field ->
+            case field of
+                EntryName ->
+                    input
+
+                EntryInit ->
+                    { input | init = incrementInput input.init }
+
+                EntryHealth ->
+                    { input | health = incrementInput input.health }
+
+        DecrementEntry field ->
+            case field of
+                EntryName ->
+                    input
+
+                EntryInit ->
+                    { input | init = decrementInput input.init }
+
+                EntryHealth ->
+                    { input | health = decrementInput input.health }
+
+        Clear ->
+            blankEntryInput
+
+
+updateSBInput : SBInputMsg -> StatBlockInput -> StatBlockInput
+updateSBInput msg input =
+    case msg of
+        SetSB field text ->
+            case field of
+                SBName ->
+                    { input | name = getInput isNotBlank text }
+
+                SBInitMod ->
+                    { input | initMod = getInput validateNumber text }
+
+                SBHealth ->
+                    { input | health = getInput validateNumber text }
+
+                SBNumDie ->
+                    { input | numDie = getInput validateNumber text }
+
+                SBDieFace ->
+                    { input | dieFace = getInput validateNumber text }
+
+                SBBonusHealth ->
+                    { input | bonusHealth = getInput validateNumber text }
+
+        IncrementSB field ->
+            case field of
+                SBName ->
+                    input
+
+                SBInitMod ->
+                    { input | initMod = incrementInput input.initMod }
+
+                SBHealth ->
+                    { input | health = incrementInput input.health }
+
+                SBNumDie ->
+                    { input | numDie = incrementInput input.numDie }
+
+                SBDieFace ->
+                    { input | dieFace = incrementInput input.dieFace }
+
+                SBBonusHealth ->
+                    { input | bonusHealth = incrementInput input.bonusHealth }
+
+        DecrementSB field ->
+            case field of
+                SBName ->
+                    input
+
+                SBInitMod ->
+                    { input | initMod = decrementInput input.initMod }
+
+                SBHealth ->
+                    { input | health = decrementInput input.health }
+
+                SBNumDie ->
+                    { input | numDie = decrementInput input.numDie }
+
+                SBDieFace ->
+                    { input | dieFace = decrementInput input.dieFace }
+
+                SBBonusHealth ->
+                    { input | bonusHealth = decrementInput input.bonusHealth }
+
+        ToggleUseHitDie ->
+            { input | useHitDie = not input.useHitDie }
+
+
+updateEntries : EntryMsg -> List Entry -> List Entry
+updateEntries msg entries =
+    case msg of
+        SetHealthAdjust entry text ->
+            List.map
+                (\e ->
+                    if e == entry then
+                        { e | input = getInput validateNumber text }
+                    else
+                        e
+                )
+                entries
+
+        IncrementHealthAdjust entry ->
+            List.map
+                (\e ->
+                    if e == entry then
+                        { e | input = incrementInput e.input }
+                    else
+                        e
+                )
+                entries
+
+        DecrementHealthAdjust entry ->
+            List.map
+                (\e ->
+                    if e == entry then
+                        { e | input = decrementInput e.input }
+                    else
+                        e
+                )
+                entries
+
+        UpdateHealth entry direction ->
+            let
+                operator =
+                    case direction of
+                        Heal ->
+                            (+)
+
+                        Damage ->
+                            (-)
+
+                amount =
+                    case entry.input of
+                        ValidInput _ num ->
+                            num
+
+                        _ ->
+                            0
+
+                updateEntry e =
+                    if e == entry then
+                        { e | health = operator e.health amount, input = NoInput }
+                    else
+                        e
+            in
+                List.map updateEntry entries
+
+        RemoveEntry entry ->
+            List.filter ((/=) entry) entries
 
 
 
@@ -480,7 +486,27 @@ getSyncId sync =
 
 validateNumber : String -> Result String Int
 validateNumber =
-    String.toInt >> Result.formatError (Basics.always "Please enter a number")
+    String.trim >> String.toInt >> Result.formatError (Basics.always "Please enter a number")
+
+
+incrementInput : Input Int -> Input Int
+incrementInput input =
+    case input of
+        ValidInput _ num ->
+            ValidInput (toString (num + 1)) (num + 1)
+
+        _ ->
+            ValidInput "1" 1
+
+
+decrementInput : Input Int -> Input Int
+decrementInput input =
+    case input of
+        ValidInput _ num ->
+            ValidInput (toString (num - 1)) (num - 1)
+
+        _ ->
+            ValidInput "-1" -1
 
 
 
