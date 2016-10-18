@@ -36,6 +36,13 @@ update msg model =
                 }
                     ! []
 
+        RemoveEntry entry ->
+            { model
+                | entryInput = getEntryInput entry.name entry.pos.initiative entry.health
+                , entries = List.filter ((/=) entry) model.entries
+            }
+                ! []
+
         NextTurn ->
             let
                 currentPos =
@@ -354,9 +361,6 @@ updateEntries msg entries =
                         e
             in
                 List.map updateEntry entries
-
-        RemoveEntry entry ->
-            List.filter ((/=) entry) entries
 
 
 

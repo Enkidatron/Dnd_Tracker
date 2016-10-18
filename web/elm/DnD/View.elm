@@ -144,7 +144,7 @@ viewEntry mdl key entry =
             , Button.render Mdl [ 2, 1, key, 2 ] mdl [ Button.onClick <| (UpdateHealth entry Heal |> EntryMsg), Button.icon, Button.colored ] [ Icon.i "add_circle" ]
             ]
         , Table.td []
-            [ Button.render Mdl [ 2, 2, key ] mdl [ Button.onClick <| (RemoveEntry entry |> EntryMsg), Button.minifab, Button.colored, Color.text dangerColor ] [ Icon.i "delete" ] ]
+            [ Button.render Mdl [ 2, 2, key ] mdl [ Button.onClick <| RemoveEntry entry, Button.minifab, Button.colored, Color.text dangerColor ] [ Icon.i "delete" ] ]
         ]
 
 

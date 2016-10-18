@@ -7,6 +7,7 @@ import Material
 type Msg
     = NoOp
     | AddEntry
+    | RemoveEntry Entry
     | NextTurn
     | EntryInputMsg EntryInputMsg
     | EntryMsg EntryMsg
@@ -58,7 +59,6 @@ type EntryMsg
     | IncrementHealthAdjust Entry
     | DecrementHealthAdjust Entry
     | UpdateHealth Entry HealthAdjustment
-    | RemoveEntry Entry
 
 
 type alias Entry =
